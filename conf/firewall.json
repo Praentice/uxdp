@@ -1,0 +1,8 @@
+{
+    "any": {
+        "forbidden_IP": "",
+        "authorized_IP": "",
+        "status": "",
+        "comments": "Theses are the default rules for any network ports unless there is a specific configuration for it."
+    }
+}

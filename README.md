@@ -23,6 +23,32 @@ pip install -r requirements.txt
 Nothing yet.
 ```
 ## Documentation
+### Syntax
+./main.py (allow ; deny ; limit) on (1-65535 ; 80,443 ; 80-100 ; any) from (any ; 192.168.1.1 ; 192.168.1.0/24 ; 192.168.1.0-10 ; 192.168.1.10,192.168.1.11)
+
+| Keyword                   | Explanation                                                                              |
+|---------------------------|------------------------------------------------------------------------------------------|
+| Allow                     | Allow access to a given port                                                             |
+| Limit                     | Limit access to a given port                                                             |
+| Deny                      | Deny access to a given port                                                              |
+| 1-65535                   | Any network port between 1 and 65535 included                                            |
+| 80, 443                   | Apply the rule on the network port 80 (HTTP) and 443 (HTTPS)                             |
+| 80-100                    | Apply the rule on the network port 80 to the network port 100                            |
+| 192.168.1.1               | Apply the rule to the 192.168.1.1 ip address only                                        |
+| 192.168.1.0/24            | Apply the rule to the network subnet 192.168.1.0/24                                      |
+| 192.168.1.0-10            | Apply the rule to all the ip address from 192.168.1.1 to 192.168.1.10 included           |
+| 192.168.1.10,192.168.1.11 | Apply the rule to the 192.168.1.10 and 192.168.1.11 ip address                           |
+| any                       | Apply the rule to all of the IP address or all of the network port based on its position |
+
+#### Examples commands
+
+| Command                                 | Explanation                                                                         |
+|-----------------------------------------|-------------------------------------------------------------------------------------|
+| ./main.py limit 80 from any             | Limit access to the network port number 80 (HTTP) from any IP address               |
+| ./main.py allow 22 from 192.168.1.1     | Allow access to the network port number 22 (SSH) from 192.168.1.1                   |
+| ./main.py allow 443 from 192.168.1.0/24 | Allow access to the network port number 443 (HTTPS) from the 192.168.1.0/24 network |
+|                                         |                                                                                     |
+
 ### Optional flags
 | Flag        | Description                          |
 |-------------|--------------------------------------|

@@ -1,85 +1,78 @@
 #!/usr/bin/python3
-import argparse
 import subprocess
 import sys
 import os
+import json
 VERSION=0.01
 
-def exampleFunction(test1,test2):
+def exampleFunction(test1,test2): #Template function
     return test1,test2
 
-def printIfNeeded(stringToPrint,canIPrintThisMessage):
-    if canIPrintThisMessage:
-        print(stringToPrint)
-def writeSourceCode(sourceCode):
-    sourceCodeFileName = "./firewall.c" #Default name for the sourceCode
+def generateConfigurationFile(): #Generate the configuration file called firewall.json in the conf folder
+    configuration = {'any': {'forbidden_IP': '', 'authorized_IP': '', 'status':'', 'comments':'Theses are the default rules for any network ports unless there is a specific configuration for it.' }} #Template for the configuration of a network port
+    jsonString = json.dumps(configuration, indent=4) #Convert dictionnary to json format
+    jsonFile = open("./conf/firewall.json", "w") #Create a new file called firewall.json in the folder confg
+    jsonFile.write(jsonString) #Write the generated configuration into the file
+    jsonFile.close() #Close the file
+
+def getCurrentConfigurationFile(): #Retrieve the content of the configuration file in the conf folder
+    fileObject = open("./conf/firewall.json", "r")
+    jsonContent = fileObject.read()
+    configuration = json.loads(jsonContent)
+    return configuration
+
+def writeSourceCode(configuration):
+    sourceCode = r'''
+    #include <stdio.h>
+    int main() {
+        for(int i=0;i<5;i++) {
+            printf("Testing %d\n",i);
+        }
+        return 0;
+    }
+    '''
+    sourceCodeFileName = "./firewall/firewall.c" #Default name for the sourceCode
     with open(sourceCodeFileName, 'w') as FOUT: #Write source code to the file named with the value of the variable fileName
         FOUT.write(sourceCode)
     FOUT.close() #Save the source code file
     return sourceCodeFileName
 
-def compileSourceCode(sourceCodeFileName,compiledFileName,canIPrintThisMessage):
+def compileSourceCode():
     try:
-        gccCommand = "gcc {} -o {}".format(sourceCodeFileName, compiledFileName)
+        gccCommand = "gcc {} -o {}".format('./firewall/firewall.c', './firewall/firewall')
         subprocess.call(gccCommand, shell=True)
         return 0
     except Exception as e:
-        printIfNeeded("The error raised during the compilation is : {}".format(e),canIPrintThisMessage)
+        print("The error raised during the compilation is : {}".format(e))
         return 1
-def executeAndReadCompiledProgram(executeCommand,canIPrintThisMessage):
+def executeAndReadCompiledProgram():
     try:
-        p = subprocess.Popen(executeCommand, shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        p = subprocess.Popen('./firewall/firewall', shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
         for line in p.stdout:
-            printIfNeeded(line,canIPrintThisMessage) #To print or not to print, that is the question
+            print(line) #To print or not to print, that is the question
     except Exception as e:
-        printIfNeeded("The error raised during the execution is : {}".format(e), canIPrintThisMessage)
-
-
-def getOptions():
-    parser = argparse.ArgumentParser(add_help=True, formatter_class=argparse.RawTextHelpFormatter,description=
-    """
-    XUFW                  
-    This CLI tool allows you to easily configure a firewall using the XDP technology on your server
-    """,
-    epilog=
-    """
-    This tool is provided for free under GNU/GPLv3 License.
-    """,
-    )
-    parser.version = "The current version is {}".format(VERSION)
-    # Section for mandatory arguments and flag
-    #parser.add_argument('-n1', "--nothing1", required=True,help="""Nothing here. (Mandatory)""",nargs='+')
-    # Section for optional arguments and flag
-    parser.add_argument('-n2', "--nothing2", required=False,action='store_true', help="""Nothing here. (Optionnal)""", )
-    parser.add_argument('-q', "--quiet", required=False, action='store_false', help="""Disable the ability of the program to print message on the terminal. (Optionnal) """, )
-    parser.add_argument('-o', "--output", required=False, help="""Output name for the source code which will be created then compiled. Default value is "./firewall" (Optionnal) """, )
-    # Template to display tool version
-    parser.add_argument('-v', '--version', action='version', help='print the version and exit')
-    args = vars(parser.parse_args())
-    return args
+        print("The error raised during the execution is : {}".format(e))
 
 if __name__ == '__main__':
     #Getting args from user
-    args = getOptions()
-    exampleCode = r'''
-#include <stdio.h>
-int main() {
-    for(int i=0;i<5;i++) {
-        printf("Testing %d\n",i);
-    }
-    return 0;
-}
-        '''
-    canIPrintThisMessage = args['quiet']
-    print(canIPrintThisMessage)
-    if args['output'] is None:
-        compiledFileName = './firewall'
-    else:
-        compiledFileName = args['output']
-    sourceCodeFileName = writeSourceCode(exampleCode)
-    returnValue = compileSourceCode(sourceCodeFileName,compiledFileName,canIPrintThisMessage)
+    configuration = {}
+    #Check if user run this program for the first time
+    if (os.path.exists('./conf/firewall.json') == False):
+        generateConfigurationFile() #We generate the configuration file
+    configuration = getCurrentConfigurationFile() #We retrieve the configuration from the json file
+    print(configuration)
+    print(sys.argv)
+    # Once we have retrieved the configuration file, we can begin to treat the user command.
+    if sys.argv[1] == "allow":
+    elif sys.argv[1] == "limit":
+    elif sys.argv[1] == "deny":
+    elif sys.argv[1] == "reset":
+    elif sys.argv[1] == "reload":
+    sourceCodeFileName = writeSourceCode(configuration)
+    returnValue = compileSourceCode()
     if returnValue == 0:
-        executeAndReadCompiledProgram(compiledFileName,canIPrintThisMessage) # Run the compiled programm
+        executeAndReadCompiledProgram()  # Run the compiled programm
+
 
 
 
