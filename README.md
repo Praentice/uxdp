@@ -1,4 +1,4 @@
-# XUFW (XDP Uncomplicated Firewall)
+# UXDP (Uncomplicated XDP)
 This CLI tool allows you to easily configure the XDP firewall on your server.
 ## Install the dependencies
 First, do the following commands on a Debian virtual machine: 

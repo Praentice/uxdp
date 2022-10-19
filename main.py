@@ -9,7 +9,23 @@ def exampleFunction(test1,test2): #Template function
     return test1,test2
 
 def generateConfigurationFile(): #Generate the configuration file called firewall.json in the conf folder
-    configuration = {'any': {'forbidden_IP': '', 'authorized_IP': '', 'status':'', 'comments':'Theses are the default rules for any network ports unless there is a specific configuration for it.' }} #Template for the configuration of a network port
+    configuration = {"before_rules": {
+        "0": {
+            "action": "ACCEPT",
+            "proto": "ICMP",
+            "comments": "Allow ICMP by default"
+        },
+        "1": {
+            "action": "ACCEPT",
+            "proto": "DHCP",
+            "comments": "Allow DHCP by default"
+        },
+        "2": {
+            "action": "ACCEPT",
+            "proto": "MULTICAST",
+            "comments": "Allow DHCP by default"
+        }
+    }}, #Template for the configuration of a network port
     jsonString = json.dumps(configuration, indent=4) #Convert dictionnary to json format
     jsonFile = open("./conf/firewall.json", "w") #Create a new file called firewall.json in the folder confg
     jsonFile.write(jsonString) #Write the generated configuration into the file
@@ -64,10 +80,17 @@ if __name__ == '__main__':
     print(sys.argv)
     # Once we have retrieved the configuration file, we can begin to treat the user command.
     if sys.argv[1] == "allow":
+        print("allow")
     elif sys.argv[1] == "limit":
+        print("allow")
     elif sys.argv[1] == "deny":
+        print("allow")
     elif sys.argv[1] == "reset":
+        print("allow")
     elif sys.argv[1] == "reload":
+        print("allow")
+    else:
+        print("xxx")
     sourceCodeFileName = writeSourceCode(configuration)
     returnValue = compileSourceCode()
     if returnValue == 0:
