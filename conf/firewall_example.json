@@ -12,7 +12,7 @@
         }
     },
     "firewall": {
-        "1": {
+        "0": {
             "action": "ACCEPT",
             "ipdst": "0",
             "ipsrc": "1.1.1.1/2",
@@ -20,7 +20,30 @@
             "portdst": "22",
             "portsrc": 0,
             "limit": "10/30",
-            "comments": "Allow SSH"
+            "comments": "Allow SSH",
+            "interface": "eth0"
+        },
+        "1": {
+            "action": "ACCEPT",
+            "ipdst": "0",
+            "ipsrc": "1.1.1.1/2",
+            "proto": "TCP",
+            "portdst": "80",
+            "portsrc": 0,
+            "limit": "10/30",
+            "comments": "Allow SSH",
+            "interface": "eth1"
+        },
+        "2": {
+            "action": "ACCEPT",
+            "ipdst": "0",
+            "ipsrc": "1.1.1.1/2",
+            "proto": "TCP",
+            "portdst": "443",
+            "portsrc": 0,
+            "limit": "10/30",
+            "comments": "Allow SSH",
+            "interface": "eth0"
         }
     },
     "any": {
