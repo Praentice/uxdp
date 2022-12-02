@@ -41,14 +41,14 @@
         },
         "2": {
             "action": "ACCEPT",
-            "ipdst": "0",
-            "ipsrc": "1.1.1.1/2",
+            "ipdst": 0,
+            "ipsrc": "any",
             "proto": "TCP",
-            "portdst": "443",
-            "portsrc": 0,
-            "limit": "10/30",
-            "comments": "Allow SSH",
-            "interface": "eth0"
+            "portdst": 0,
+            "portsrc": "80,443",
+            "limit": 0,
+            "comments": "Allow web access",
+            "interface": "eth"
         }
     },
     "firewall_status": {

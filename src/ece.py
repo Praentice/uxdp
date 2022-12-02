@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#from bcc import BPF
 import os
 import subprocess
 import json
@@ -51,14 +53,23 @@ def getCurrentConfigurationFile(): #Retrieve the content of the configuration fi
     return configuration
 
 def getAllNetworkInterfaces(configuration):
-    print(configuration['0'])
     networkInterfacesList = []
     for k in range(len(configuration)):
         interface = configuration[str(k)]["interface"]
         if interface not in networkInterfacesList:
             networkInterfacesList.append(interface)
     return networkInterfacesList
-        
+
+def sortingAllRulesToTheNetworkInterfaces(configuration,interfaces):
+        dictionnary = {}
+        for i in interfaces:
+            dictionnary[i]=[]
+            for k in configuration["before_rules"]:
+                dictionnary[i].append(configuration["before_rules"][k])
+            for j in configuration["firewall"]:
+                if i == configuration['firewall'][j]['interface']:
+                    dictionnary[i].append(configuration['firewall'][j])
+        return dictionnary
 
 
 if __name__ == '__main__':
@@ -86,9 +97,10 @@ if __name__ == '__main__':
     configuration = getCurrentConfigurationFile()
     #print(configuration["firewall"]) #Print the configuration retrieved by the program for debugging purposes
     networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # Retrieve all differents network interfaces mentionned in the configuration file
-    #rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces() # Rewrite the configuration rules to associate each rules to the corresponding interfaces
-    #for firewallConfig in rulesPerNetworkInterfaces: #Write firewall rules in a specific source code for each network interfaces
-    sourceCode = generateSourceCode(configuration) #Generate the source code for an interface
-    returnValue = writeSourceCode(sourceCode) #Write the generated source code to a file
-    executeAndReadCompiledProgram()
+    print(networkInterfacesList)
+    rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # Rewrite the configuration rules to associate each rules to the corresponding interfaces
+    print(rulesPerNetworkInterfaces)
+    sourceCode = generateSourceCode(rulesPerNetworkInterfaces) #Generate the source code for an interface
+    #returnValue = writeSourceCode(sourceCode) #Write the generated source code to a file
+    #executeAndReadCompiledProgram()
     
