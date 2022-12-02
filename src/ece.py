@@ -37,13 +37,12 @@ def createFilesPerNetworkInterface(networkInterfacesList):
         shutil.copyfile('./firewall/template/uxdp_template_firewall.c','./firewall/source/uxdp_'+i+'_firewall.c')
 
 def applyRules(rulesPerNetworkInterfaces):
-    for networkInterface in rulesPerNetworkInterfaces:
-        rules = rulesPerNetworkInterfaces[networkInterface]
-        sourceCode = generateSourceCodePerNetworkInterface(networkInterface,rules)
-        print(sourceCode)
-        #writeSourceCode(sourceCode)
-        #fileNameCompiledCode = compileSourceCode(fileName)
-        #executeCompiledProgram(fileNameCompiledCode)
+    for networkInterface in rulesPerNetworkInterfaces: #For each network interfaces
+        rules = rulesPerNetworkInterfaces[networkInterface] #We retrieve the rules
+        sourceCode = generateSourceCodePerNetworkInterface(networkInterface,rules) #We generate the firewall source code 
+        #writeSourceCode(sourceCode) # We write the generated firewall source code to the file
+        #fileNameCompiledCode = compileSourceCode(fileName) # We compile the firewall source code
+        #executeCompiledProgram(fileNameCompiledCode) # We apply the firewall program on the network interface
 
 
 def generateSourceCodePerNetworkInterface(networkInterface,rules): #Generate the firewall source code based on the configuration retrieved from the file ./conf/firewall.json
@@ -84,33 +83,9 @@ def executeCompiledProgram(networkInterface): #Execute the firewall program and 
         print("The error raised during the execution is : {}".format(e))
 
 if __name__ == '__main__':
-    '''
-    try:
-        configuration = getCurrentConfigurationFile()
-        #print(configuration["firewall"]) #Print the configuration retrieved by the program for debugging purposes
-        networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # Retrieve all differents network interfaces mentionned in the configuration file
-        sourceCode = generateSourceCode(configuration)
-        returnValue = writeSourceCode(sourceCode) 
-        if returnValue == 0: #Check if the source code writing went well
-            returnValue = compileSourceCode() 
-            if returnValue == 0: #Check if the compilation went well
-                executeAndReadCompiledProgram()  # Run the compiled programm
-            else : #Only executed in case the compilation went wrong
-                print("Inexcepted issue, exiting...")
-                os._exit(2)
-            os._exit(0)
-        else: #Only executed in case the source code writing went wrong
-            print("An error was raised during the generation of the firewall : {}".format(returnValue))
-            os._exit(1)
-    except Exception as e:
-        print("The error raised is : {}".format(e))
-    '''
-    configuration = getCurrentConfigurationFile()
-    #print(configuration["firewall"]) #Print the configuration retrieved by the program for debugging purposes
-    networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # Retrieve all differents network interfaces mentionned in the configuration file
-    #print(networkInterfacesList)
-    rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # Rewrite the configuration rules to associate each rules to the corresponding interfaces
-    #print(rulesPerNetworkInterfaces)
-    createFilesPerNetworkInterface(networkInterfacesList)
-    applyRules(rulesPerNetworkInterfaces)
+    configuration = getCurrentConfigurationFile() # We retrieve the configuration file content
+    networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # We retrieve the network interfaces based on the configuration file
+    rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # We sort the rules based on the network interface they apply
+    createFilesPerNetworkInterface(networkInterfacesList) # We create a firewall from a template for each network interface
+    applyRules(rulesPerNetworkInterfaces) # We apply the rules configured by the user
     
