@@ -4,47 +4,8 @@ import os
 import subprocess
 import json
 import sys
+import shutil
 
-def generateSourceCode(configuration): #Generate the firewall source code based on the configuration retrieved from the file ./conf/firewall.json
-    sourceCode = r'''
-    #include <stdio.h>
-    int main() {
-        for(int i=0;i<5;i++) {
-            printf("Testing %d\n",i);
-        }
-        return 0;
-    }
-    '''
-    sourceCodeInOneLine = '#include <stdio.h>\nint main() {\n\tfor(int i=0;i<5;i++) {\n\t\tprintf("Testing %d\\n",i);\n\t}\n\treturn 0;\n}'
-    return sourceCodeInOneLine
-
-def writeSourceCode(sourceCode): #Write the generated firewall source code into a file
-    sourceCodeFileName = "./firewall/firewall.c" 
-    try:
-        with open(sourceCodeFileName, 'w') as FOUT: #Write source code to the file named with the value of the variable fileName
-            FOUT.write(sourceCode)
-        FOUT.close() #Save the source code file
-        return 0
-    except Exception as e:
-        return e #In case something went wrong
-    
-
-def compileSourceCode(): #Compiled the firewall source code file to get a binary
-    try:
-        gccCommand = "gcc {} -o {}".format('./firewall/firewall.c', './firewall/firewall')
-        subprocess.call(gccCommand, shell=True)
-        return 0
-    except Exception as e:
-        print("The error raised during the compilation is : {}".format(e))
-        return 1
-
-def executeAndReadCompiledProgram(): #Execute the firewall program and push it to the right network interface
-    try:
-        p = subprocess.Popen('./firewall/firewall', shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
-        for line in p.stdout:
-            print(line) #To print or not to print, that is the question
-    except Exception as e:
-        print("The error raised during the execution is : {}".format(e))
 
 def getCurrentConfigurationFile(): #Retrieve the content of the configuration file in the conf folder
     fileObject = open("./conf/firewall.json", "r")
@@ -71,6 +32,56 @@ def sortingAllRulesToTheNetworkInterfaces(configuration,interfaces):
                     dictionnary[i].append(configuration['firewall'][j])
         return dictionnary
 
+def createFilesPerNetworkInterface(networkInterfacesList):
+    for i in networkInterfacesList:
+        shutil.copyfile('./firewall/template/uxdp_template_firewall.c','./firewall/source/uxdp_'+i+'_firewall.c')
+
+def applyRules(rulesPerNetworkInterfaces):
+    for networkInterface in rulesPerNetworkInterfaces:
+        rules = rulesPerNetworkInterfaces[networkInterface]
+        sourceCode = generateSourceCodePerNetworkInterface(networkInterface,rules)
+        print(sourceCode)
+        #writeSourceCode(sourceCode)
+        #fileNameCompiledCode = compileSourceCode(fileName)
+        #executeCompiledProgram(fileNameCompiledCode)
+
+
+def generateSourceCodePerNetworkInterface(networkInterface,rules): #Generate the firewall source code based on the configuration retrieved from the file ./conf/firewall.json
+    #\t = tabulation char for indentation
+    #\n = new line char for new line 
+    firewallFile = open("./firewall/source/"+"uxdp_"+networkInterface+"_firewall.c",'r')
+    for line in firewallFile:
+        print(line)
+    resultat = 0
+    return resultat
+
+def writeSourceCode(sourceCode): #Write the generated firewall source code into a file
+    sourceCodeFileName = "./firewall/firewall.c" 
+    try:
+        with open(sourceCodeFileName, 'w') as FOUT: #Write source code to the file named with the value of the variable fileName
+            FOUT.write(sourceCode)
+        FOUT.close() #Save the source code file
+        return 0
+    except Exception as e:
+        return e #In case something went wrong
+
+def compileSourceCode(networkInterface): #Compiled the firewall source code file to get a binary
+    try:
+        #clang -O2 -g -Wall -target bpf -c {} -o {}.format("./firewall/source/"+"uxdp_"+networkInterface+"_firewall.c","./firewall/exec/"+"uxdp_"+networkInterface+"_firewall.o")
+        clangCommand = "clang -O2 -g -Wall -target bpf -c {} -o {}".format("./firewall/source/"+"uxdp_"+networkInterface+"_firewall.c","./firewall/exec/"+"uxdp_"+networkInterface+"_firewall.o")
+        subprocess.call(clangCommand, shell=True)
+        return 0
+    except Exception as e:
+        print("The error raised during the compilation is : {}".format(e))
+        return 1
+
+def executeCompiledProgram(networkInterface): #Execute the firewall program and push it to the right network interface
+    fileNameToCall = "./firewall/exec/"+"uxdp_"+networkInterface+"_firewall.o"
+    #To unload the firewall : sudo ip link set veth1 xdpgeneric obj xdp_drop.o sec xdp_drop
+    try:
+        p = subprocess.Popen('sudo ip link set '+networkInterface+' xdpgeneric obj '+fileNameToCall+'sec firewall', shell=False,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    except Exception as e:
+        print("The error raised during the execution is : {}".format(e))
 
 if __name__ == '__main__':
     '''
@@ -97,10 +108,9 @@ if __name__ == '__main__':
     configuration = getCurrentConfigurationFile()
     #print(configuration["firewall"]) #Print the configuration retrieved by the program for debugging purposes
     networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # Retrieve all differents network interfaces mentionned in the configuration file
-    print(networkInterfacesList)
+    #print(networkInterfacesList)
     rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # Rewrite the configuration rules to associate each rules to the corresponding interfaces
-    print(rulesPerNetworkInterfaces)
-    sourceCode = generateSourceCode(rulesPerNetworkInterfaces) #Generate the source code for an interface
-    #returnValue = writeSourceCode(sourceCode) #Write the generated source code to a file
-    #executeAndReadCompiledProgram()
+    #print(rulesPerNetworkInterfaces)
+    createFilesPerNetworkInterface(networkInterfacesList)
+    applyRules(rulesPerNetworkInterfaces)
     
