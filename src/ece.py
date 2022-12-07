@@ -82,10 +82,40 @@ def executeCompiledProgram(networkInterface): #Execute the firewall program and 
     except Exception as e:
         print("The error raised during the execution is : {}".format(e))
 
+def unloadFirewall(networkInterface):
+    try:
+        p = subprocess.Popen('sudo ./xdp-loader unload -a '+networkInterface+'', shell=False,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    except Exception as e:
+        print("The error raised during the execution is : {}".format(e))
+
+
 if __name__ == '__main__':
-    configuration = getCurrentConfigurationFile() # We retrieve the configuration file content
-    networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # We retrieve the network interfaces based on the configuration file
-    rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # We sort the rules based on the network interface they apply
-    createFilesPerNetworkInterface(networkInterfacesList) # We create a firewall from a template for each network interface
-    applyRules(rulesPerNetworkInterfaces) # We apply the rules configured by the user
+    if (sys.argv[1] == "enable"):
+        if (len(sys.argv) == 2):
+            configuration = getCurrentConfigurationFile() # We retrieve the configuration file content
+            networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # We retrieve the network interfaces based on the configuration file
+            rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # We sort the rules based on the network interface they apply
+            createFilesPerNetworkInterface(networkInterfacesList) # We create a firewall from a template for each network interface
+            applyRules(rulesPerNetworkInterfaces) # We apply the rules configured by the user
+    if (sys.argv[1] == "disable"):
+        if (len(sys.argv) == 2):
+            networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"])
+            for i in networkInterfacesList:
+                unloadFirewall(i)
+        else:
+            for i in range(2,len(sys.argv)):
+                unloadFirewall(sys.argv[i])
+    if (sys.argv[1] == "reload"):
+        if (len(sys.argv) == 2):
+            networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"])
+            for i in networkInterfacesList:
+                unloadFirewall(i)
+                executeCompiledProgram(i)
+        else:
+            for i in range(2,len(sys.argv)):
+                unloadFirewall(sys.argv[i])
+                executeCompiledProgram(sys.argv[i])
+    
+    
+    
     
