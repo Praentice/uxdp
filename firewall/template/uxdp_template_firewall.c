@@ -38,12 +38,10 @@ int myxdpprogram(struct xdp_md *ctx) {
         case(IPPROTO_TCP): // If TCP is used as the transport protocol
         {
           struct tcphdr *tcp = (void*)ip + sizeof(*ip); 
-          if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't 
-          
-            // Begin section of generated code
-            return XDP_PASS; // Fill here with dynamic code
-            // End section of generated code
-            
+          if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't malformed
+          // Begin section of generated code
+//GENERATED_CODE_TCP
+          // End section of generated code
           }
           break;
         }
@@ -52,11 +50,9 @@ int myxdpprogram(struct xdp_md *ctx) {
         {
           struct tcphdr *udp = (void*)ip + sizeof(*ip); 
           if ((void*)udp + sizeof(*udp) <= data_end) { // Check if UDP packet isn't malformed
-
-            // Begin section of generated code
-            return XDP_PASS; // Fill here with dynamic code
-            // End section of generated code
-
+          // Begin section of generated code
+//GENERATED_CODE_UDP
+          // End section of generated code
           }
           break;
         }
@@ -65,11 +61,9 @@ int myxdpprogram(struct xdp_md *ctx) {
         {
           struct icmphdr *icmp = (void*)ip + sizeof(*ip); 
           if ((void*)icmp + sizeof(*icmp) <= data_end) { // Check if the ICMP packet isn't malformed
-
             // Begin section of generated code
-            return XDP_PASS; // Fill here with dynamic code
+//GENERATED_CODE_ICMP
             // End section of generated code
-
           }
           break;
         }
@@ -81,50 +75,6 @@ int myxdpprogram(struct xdp_md *ctx) {
   return XDP_DROP;
 
 }
-
-
-// MODULE_PORT_DEST = Module for TCP port dest : (PROTOCOL->dest == ntohs(PORT_DEST) // COMMENT
-// MODULE_PORT_SRC = Module for TCP one port src : (PROTOCOL->src == ntohs(PORT_DEST) // COMMENT
-// MODULE_PORT_SRC_RANGE = Module for TCP range port src : ((PROTOCOL->src >= ntohs(PORT_RANGE_MIN)) && (PROTOCOL->src <= ntohs(PORT_RANGE_MAX)) // COMMENT
-
-// MODULE_IP_SRC = Module for IP address source only (One address and several) : (iphdr->src == IP_ADDR_SRC)
-// MODULE_IP_SRC_NETWORK = Module for IP address source only (Network mask) : (is_ip_address_in_network(iphdr->src,NETIP,NETMASK))
-
-// MODULE_PORT_DEST = Module for IP address destination only (One address and several) : (iphdr->dest == IP_ADDR_DEST)
-// MODULE_PORT_DEST_NETWORK = Module for IP address destination only (Network mask) : (is_ip_address_in_network(iphdr->dest,NETIP,NETMASK))
-
-/*
-            if (MODULE_PORT_DEST && MODULE_PORT_SRC)) { // Check if it is TCP port PORT_DEST
-              if (MODULE_IP_SRC && MODULE_IP_DEST) {
-                  return XDP_PASS;
-              }
-            }
-*/
-
-/* For only one port dest in TCP
-            if (tcp->dest == ntohs(PORT_DEST)) { // Check if it is TCP port PORT_DEST
-                  return XDP_PASS;
-            }
-*/
-
-/* For port dest and port src  in TCP
-            if ((tcp->dest == ntohs(PORT_DEST)) && ((tcp->src >= ntohs(PORT_RANGE_MIN)) && (tcp->src <= ntohs(PORT_RANGE_MAX))) { // Check if it is TCP port 80
-                  return XDP_PASS;
-            }
-*/
-
-/* For only port dest in TCP
-            if (tcp->dest == ntohs(PORT_DEST)) { // Check if it is TCP port PORT_DEST
-                  return XDP_PASS;
-            }
-*/
-
-/*
-            if (udp->dest == ntohs(80) &&) { // Check if it is UDP port 80
-                  return XDP_PASS;
-            }
-*/
-
 /*
 // https://stackoverflow.com/questions/31040208/standard-safe-way-to-check-if-ip-address-is-in-range-subnet
 uint32_t ip = ...; // value to check

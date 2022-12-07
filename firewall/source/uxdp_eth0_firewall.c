@@ -6,6 +6,21 @@
 #include <netinet/in.h>
 #include <bpf/bpf_helpers.h>
 
+//Function to check if IP address is in network sub
+int is_ip_address_in_network(uint32_t ip, uint32_t netip, uint32_t netmask){
+  //uint32_t ip = ...; // value to check as a int value
+  //uint32_t netip = ...; // network ip to compare with as a int value
+  //uint32_t netmask = ...; // network ip subnet mask as a int value
+  if ((netip & netmask) == (ip & netmask)) {
+    return 1;
+  }
+    // is on same subnet...
+  else {
+    return 0;
+  }
+    // not on same subnet...
+}
+
 SEC("firewall")
 int myxdpprogram(struct xdp_md *ctx) {
   void *data = (void *)(long)ctx->data;
@@ -23,12 +38,20 @@ int myxdpprogram(struct xdp_md *ctx) {
         case(IPPROTO_TCP): // If TCP is used as the transport protocol
         {
           struct tcphdr *tcp = (void*)ip + sizeof(*ip); 
-          if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't 
-          
-            // Begin section of generated code
-            return XDP_PASS; // Fill here with dynamic code
-            // End section of generated code
-            
+          if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't malformed
+          // Begin section of generated code
+            if ((tcp->dest >= ntohs(22)) && (tcp->dest <= ntohs(26)) && (tcp->source >= ntohs(1)) && (tcp->source <= ntohs(10000))) { // Allow SSH 
+		          if ((ip->saddr == "1.1.1.1/2") && 1) {
+			          return XDP_PASS;
+		          }
+            }
+            if ((tcp->dest == ntohs(80)) && 1) { // Allow HTTP with rate limit 
+		          if ((ip->saddr == "1.1.1.1/2") && (ip->daddr == "0")) {
+			          return XDP_PASS;
+		          }
+            }
+//GENERATED_CODE_TCP
+          // End section of generated code
           }
           break;
         }
@@ -37,11 +60,9 @@ int myxdpprogram(struct xdp_md *ctx) {
         {
           struct tcphdr *udp = (void*)ip + sizeof(*ip); 
           if ((void*)udp + sizeof(*udp) <= data_end) { // Check if UDP packet isn't malformed
-
-            // Begin section of generated code
-            return XDP_PASS; // Fill here with dynamic code
-            // End section of generated code
-
+          // Begin section of generated code
+//GENERATED_CODE_UDP
+          // End section of generated code
           }
           break;
         }
@@ -50,11 +71,14 @@ int myxdpprogram(struct xdp_md *ctx) {
         {
           struct icmphdr *icmp = (void*)ip + sizeof(*ip); 
           if ((void*)icmp + sizeof(*icmp) <= data_end) { // Check if the ICMP packet isn't malformed
-
             // Begin section of generated code
-            return XDP_PASS; // Fill here with dynamic code
+            if (1 && 1) { // Allow ICMP by default 
+		          if (1 && 1) {
+			          return XDP_PASS;
+		          }
+            }
+//GENERATED_CODE_ICMP
             // End section of generated code
-
           }
           break;
         }
@@ -66,17 +90,16 @@ int myxdpprogram(struct xdp_md *ctx) {
   return XDP_DROP;
 
 }
-
 /*
-            if (tcp->dest == ntohs(80)) { // Check if it is TCP port 80
-                  return XDP_DROP;
-            }
+// https://stackoverflow.com/questions/31040208/standard-safe-way-to-check-if-ip-address-is-in-range-subnet
+uint32_t ip = ...; // value to check
+uint32_t netip = ...; // network ip to compare with
+uint32_t netmask = ...; // network ip subnet mask
+if ((netip & netmask) == (ip & netmask))
+    // is on same subnet...
+else
+    // not on same subnet...
 */
 
-/*
-            if (udp->dest == ntohs(80)) { // Check if it is UDP port 80
-                  return XDP_DROP;
-            }
-*/
 
 char _license[] SEC("license") = "GPL";

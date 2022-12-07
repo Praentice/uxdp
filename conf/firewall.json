@@ -3,27 +3,42 @@
         "0": {
             "action": "ACCEPT",
             "proto": "ICMP",
+            "portdst" : 0,
+            "portsrc" : 0,
+            "ipsrc" : 0,
+            "ipdst" : 0,
+            "limit": 0,
             "comments": "Allow ICMP by default"
         },
         "1": {
             "action": "ACCEPT",
             "proto": "DHCP",
+            "portdst" : 0,
+            "portsrc" : 0,
+            "ipsrc" : 0,
+            "ipdst" : 0,
+            "limit": 0,
             "comments": "Allow DHCP by default"
         },
         "2": {
             "action": "ACCEPT",
             "proto": "MULTICAST",
+            "portdst" : 0,
+            "portsrc" : 0,
+            "ipsrc" : 0,
+            "ipdst" : 0,
+            "limit": 0,
             "comments": "Allow DHCP by default"
         }
     },
     "firewall": {
         "0": {
             "action": "ACCEPT",
-            "ipdst": "0",
+            "ipdst": 0,
             "ipsrc": "1.1.1.1/2",
             "proto": "TCP",
-            "portdst": "22",
-            "portsrc": 0,
+            "portdst": "22-26",
+            "portsrc": "1-10000",
             "limit": "10/30",
             "comments": "Allow SSH",
             "interface": "eth0"
@@ -36,8 +51,8 @@
             "portdst": "80",
             "portsrc": 0,
             "limit": "10/30",
-            "comments": "Allow SSH",
-            "interface": "eth1"
+            "comments": "Allow HTTP with rate limit",
+            "interface": "eth0"
         },
         "2": {
             "action": "ACCEPT",
