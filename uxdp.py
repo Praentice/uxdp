@@ -4,6 +4,8 @@ import ipaddress
 import socket
 import json
 from tabulate import tabulate
+sys.path.insert(0,'./src') #Essential to import ece.py in uxdp.py
+from src import ece
 
 def getHelp():
     help = """
@@ -188,13 +190,17 @@ def main():
     if action == "limit":
         addRule("LIMIT")
     if action == "enable":
-        print("@TODO : enable the firewall...")
+        #print("@TODO : enable the firewall...")
+        ece.main(action)
     if action == "disable":
-        print("@TODO : disable the firewall...")
+        #print("@TODO : disable the firewall...")
+        ece.main(action)
     if action == "reload":
-        print("@TODO : reload the firewall...")
+        #print("@TODO : reload the firewall...")
+        ece.main(action)
     if action == "reset":
-        print("@TODO : reset the firewall...")
+        #print("@TODO : reset the firewall...")
+        ece.main(action)
     
 
 if __name__ == '__main__':

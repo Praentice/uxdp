@@ -5,6 +5,10 @@
 #include <linux/icmp.h>
 #include <netinet/in.h>
 #include <bpf/bpf_helpers.h>
+#include <stdio.h>
+
+const int true = 1;
+const int false = 0;
 
 //Function to check if IP address is in network sub
 int is_ip_address_in_network(uint32_t ip, uint32_t netip, uint32_t netmask){
@@ -40,8 +44,8 @@ int myxdpprogram(struct xdp_md *ctx) {
           struct tcphdr *tcp = (void*)ip + sizeof(*ip); 
           if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't malformed
           // Begin section of generated code
-            if (1 && ((TCP->source == ntohs(80)) || )) { // Allow web access 
-		          if ((ip->saddr == "any") && 1) {
+            if ((0 < 1) && ((tcp->source == ntohs(80)) || )) { // Allow web access 
+		          if ((ip->saddr == "any") && (1 > 0)) {
 			          return XDP_PASS;
 		          }
             }
@@ -67,8 +71,8 @@ int myxdpprogram(struct xdp_md *ctx) {
           struct icmphdr *icmp = (void*)ip + sizeof(*ip); 
           if ((void*)icmp + sizeof(*icmp) <= data_end) { // Check if the ICMP packet isn't malformed
             // Begin section of generated code
-            if (1 && 1) { // Allow ICMP by default 
-		          if (1 && 1) {
+            if ((0 < 1) && (0 < 1)) { // Allow ICMP by default 
+		          if ((1 > 0) && (1 > 0)) {
 			          return XDP_PASS;
 		          }
             }

@@ -5,6 +5,10 @@
 #include <linux/icmp.h>
 #include <netinet/in.h>
 #include <bpf/bpf_helpers.h>
+#include <stdio.h>
+
+const int true = 1;
+const int false = 0;
 
 //Function to check if IP address is in network sub
 int is_ip_address_in_network(uint32_t ip, uint32_t netip, uint32_t netmask){
@@ -41,12 +45,12 @@ int myxdpprogram(struct xdp_md *ctx) {
           if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't malformed
           // Begin section of generated code
             if ((tcp->dest >= ntohs(22)) && (tcp->dest <= ntohs(26)) && (tcp->source >= ntohs(1)) && (tcp->source <= ntohs(10000))) { // Allow SSH 
-		          if (((is_ip_address_in_network(ip->saddr,0x0a0a0a00,0xffffff00))) && ((is_ip_address_in_network(ip->daddr,0x0a0a0a00,0xffffff00)))) {
+		          if (((is_ip_address_in_network(ip->saddr,ntohl(0x0A0A0A00),ntohl(0xFFFFFF00)))) && ((is_ip_address_in_network(ip->daddr,ntohl(0x0A0A0A00),ntohl(0xFFFFFF00))))) {
 			          return XDP_PASS;
 		          }
             }
-            if ((tcp->dest == ntohs(80)) && 1) { // Allow HTTP with rate limit 
-		          if (((is_ip_address_in_network(ip->saddr,0x01010101,0xc0000000))) && 1) {
+            if ((tcp->dest == ntohs(80)) && (0 < 1)) { // Allow HTTP with rate limit 
+		          if (((is_ip_address_in_network(ip->saddr,ntohl(0x01010101),ntohl(0xC0000000)))) && (1 > 0)) {
 			          return XDP_PASS;
 		          }
             }
@@ -72,8 +76,8 @@ int myxdpprogram(struct xdp_md *ctx) {
           struct icmphdr *icmp = (void*)ip + sizeof(*ip); 
           if ((void*)icmp + sizeof(*icmp) <= data_end) { // Check if the ICMP packet isn't malformed
             // Begin section of generated code
-            if (1 && 1) { // Allow ICMP by default 
-		          if (1 && 1) {
+            if ((0 < 1) && (0 < 1)) { // Allow ICMP by default 
+		          if ((1 > 0) && (1 > 0)) {
 			          return XDP_PASS;
 		          }
             }

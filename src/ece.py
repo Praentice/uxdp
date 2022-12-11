@@ -63,10 +63,12 @@ def createFilesPerNetworkInterface(networkInterfacesList):
 def applyRules(rulesPerNetworkInterfaces):
     for networkInterface in rulesPerNetworkInterfaces: #For each network interfaces
         rules = rulesPerNetworkInterfaces[networkInterface] #We retrieve the rules
-        sourceCode = generateSourceCodePerNetworkInterface(networkInterface,rules) #We generate the firewall source code 
-        #writeSourceCode(sourceCode) # We write the generated firewall source code to the file
-        #fileNameCompiledCode = compileSourceCode(fileName) # We compile the firewall source code
-        #executeCompiledProgram(fileNameCompiledCode) # We apply the firewall program on the network interface
+        generateSourceCodePerNetworkInterface(networkInterface,rules) #We generate the firewall source code 
+        errorCode = compileSourceCode(networkInterface) # We compile the firewall source code
+        if errorCode == 1:
+            print("Error during the compilation of the firwall for this network interface : {}".format(networkInterface))
+        else :
+            executeCompiledProgram(networkInterface) # We apply the firewall program on the network interface
 
 
 def generateSourceCodePerNetworkInterface(networkInterface,rules): #Generate the firewall source code based on the configuration retrieved from the file ./conf/firewall.json
@@ -146,7 +148,6 @@ def generateAndWriteOneRule(networkInterface,rule):
         ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC","(0 < 1)")
 
     if (type(rule['ipsrc']) is str): # Generate code to check the source port
-        print(rule['ipsrc'])
         if ("/" in rule["ipsrc"]):
             conditionIpSrc = MODULE_IP_SRC_NETWORK
             networkAddrInStr,networkMaskInStr = cidrToNetmask(rule["ipsrc"])
@@ -164,18 +165,13 @@ def generateAndWriteOneRule(networkInterface,rule):
         ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","(1 > 0)")
     
     if (type(rule['ipdst']) is str): # Generate code to check the source port
-        print(rule['ipdst'])
         if ("/" in rule["ipdst"]):
             conditionIpDest = MODULE_IP_DEST_NETWORK
             networkAddrInStr,networkMaskInStr = cidrToNetmask(rule["ipdst"])
             networkAddrInHex = "0x"+((binascii.hexlify(socket.inet_aton(networkAddrInStr)).decode('utf-8'))).upper()
             networkMaskInHex = "0x"+((binascii.hexlify(socket.inet_aton(networkMaskInStr)).decode('utf-8'))).upper()
-            print(conditionIpDest)
             conditionIpDest = conditionIpDest.replace("NETIP",networkAddrInHex)
             conditionIpDest = conditionIpDest.replace("NETMASK",networkMaskInHex)
-            print(conditionIpDest)
-            print(networkAddrInHex)
-            print(networkMaskInHex)
             k = 0
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","("+conditionIpDest+")")
         else :
@@ -219,50 +215,47 @@ def executeCompiledProgram(networkInterface): #Execute the firewall program and 
     fileNameToCall = "./firewall/exec/"+"uxdp_"+networkInterface+"_firewall.o"
     #To unload the firewall : sudo ip link set veth1 xdpgeneric obj xdp_drop.o sec xdp_drop
     try:
-        p = subprocess.Popen('sudo ip link set '+networkInterface+' xdpgeneric obj '+fileNameToCall+'sec firewall', shell=False,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        p = subprocess.Popen('ip link set '+networkInterface+' xdpgeneric obj '+fileNameToCall+' sec firewall', shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     except Exception as e:
         print("The error raised during the execution is : {}".format(e))
 
 def unloadFirewall(networkInterface):
     try:
-        p = subprocess.Popen('sudo ./xdp-loader unload -a '+networkInterface+'', shell=False,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+        #sudo ip link set veth1 xdpgeneric off
+        p = subprocess.Popen('ip link set '+networkInterface+' xdpgeneric off', shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     except Exception as e:
         print("The error raised during the execution is : {}".format(e))
 
-if __name__ == '__main__':
-    if ('enable' in sys.argv): # User wants to enable the firewall
-        if (len(sys.argv) == 2): # Apply enable action to all network interfaces
+
+def main(action, interfaces=0):
+    if (action == "enable"): # User wants to enable the firewall
+        configuration = getCurrentConfigurationFile() # We retrieve the configuration file content
+        networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # We retrieve the network interfaces based on the configuration file
+        rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # We sort the rules based on the network interface they apply
+        createFilesPerNetworkInterface(networkInterfacesList) # We create a firewall from a template for each network interface
+        applyRules(rulesPerNetworkInterfaces) # We apply the rules configured by the user
+    if (action == "disable"): # User wants to disable the firewall
+        if (interfaces == 0): # Apply disable action to all network interface
             configuration = getCurrentConfigurationFile() # We retrieve the configuration file content
-            networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"]) # We retrieve the network interfaces based on the configuration file
-            rulesPerNetworkInterfaces = sortingAllRulesToTheNetworkInterfaces(configuration,networkInterfacesList) # We sort the rules based on the network interface they apply
-            createFilesPerNetworkInterface(networkInterfacesList) # We create a firewall from a template for each network interface
-            applyRules(rulesPerNetworkInterfaces) # We apply the rules configured by the user
-    if (sys.argv[1] == "disable"): # User wants to disable the firewall
-        if (len(sys.argv) == 2): # Apply disable action to all network interface
             networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"])
             for i in networkInterfacesList:
                 unloadFirewall(i)
         else:
-            for i in range(2,len(sys.argv)): # Apply disable action to specifics network interfaces
-                unloadFirewall(sys.argv[i])
-    if (sys.argv[1] == "reload"): # User wants to reload the firewall
-        if (len(sys.argv) == 2): # Apply reload aéction to all network interface
+            for interface in (interfaces): # Apply disable action to specifics network interfaces
+                unloadFirewall(interface)
+    if (action == "reload"): # User wants to reload the firewall
+        if (interfaces == 0): # Apply reload aéction to all network interface
+            configuration = getCurrentConfigurationFile() # We retrieve the configuration file content
             networkInterfacesList = getAllNetworkInterfaces(configuration["firewall"])
             for i in networkInterfacesList:
                 unloadFirewall(i)
                 executeCompiledProgram(i)
         else:
-            for i in range(2,len(sys.argv)): #Apply reload action to specifics network interfaces
-                unloadFirewall(sys.argv[i])
-                executeCompiledProgram(sys.argv[i])
-
-        #print("ERROR : You must call the ece.py script with at least one argument !")
-        #print("python3 ece.py enable")
-        #print("python3 ece.py enable NETWORK_INTERFACE1 NETWORK_INTERFACE2")
-        #print("python3 ece.py disable")
-        #print("python3 ece.py disable NETWORK_INTERFACE1 NETWORK_INTERFACE2")
-        #print("python3 ece.py reload")
-        #print("python3 ece.py reload NETWORK_INTERFACE1 NETWORK_INTERFACE2")
+            for interface in (interfaces): #Apply reload action to specifics network interfaces
+                unloadFirewall(interface)
+                executeCompiledProgram(interface)
+if __name__ == '__main__':
+    print("ERROR : You must call the ece.py script by using uxdp.py script !")
     
     
     
