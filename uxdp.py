@@ -6,6 +6,7 @@ import json
 from tabulate import tabulate
 sys.path.insert(0,'./src') #Essential to import ece.py in uxdp.py
 from src import ece
+import os
 
 def getHelp():
     help = """
@@ -78,7 +79,7 @@ def getVersion():
 
 def validateIp(iprange):
     """
-    Get from and ip adress associeted
+    Get from an ip address associated
     :return: 1.1.1.1/24 or False
     """
     try:
@@ -148,8 +149,11 @@ def addRule(fwaction):
     
     # get the firewall config for the previous ID
     config = getFirewallconfig()
-    lastid = int(max(config['firewall'].keys()))
-    newid = str(lastid + 1)
+    if (len(config['firewall']) == 0):
+        newid = 0
+    else:
+        lastid = int(max(config['firewall'].keys()))
+        newid = str(lastid + 1)
     newrule = {
         "action": fwaction,
         "ipdst": ipdst,
@@ -166,8 +170,14 @@ def addRule(fwaction):
         outfile.write(json.dumps(config, indent=4))
     print("Rule {} was successfully added, don't forget to reload the firewall !".format(newid))
     return 1
+    
+def is_root():
+    return os.geteuid() == 0
 
 def main():
+    if (not is_root()):
+        print('This program required sudo.')
+        sys.exit(1)
     action = getAction()
     if action == False:
         getHelp()
