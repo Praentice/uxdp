@@ -2,6 +2,7 @@
 #include <linux/if_ether.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
+#include <linux/udp.h>
 #include <linux/icmp.h>
 #include <netinet/in.h>
 #include <bpf/bpf_helpers.h>
@@ -44,6 +45,9 @@ int myxdpprogram(struct xdp_md *ctx) {
           struct tcphdr *tcp = (void*)ip + sizeof(*ip); 
           if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't malformed
           // Begin section of generated code
+            if(is_ip_address_in_network(ip->daddr,ntohl(0xE0000000),ntohl(0xF0000000))){ // Check if TCP packet is multicast
+              return XDP_PASS; //Change this line to 'return XDP_DROP;' to disable multicast
+            }
 //GENERATED_CODE_TCP
           // End section of generated code
           }
@@ -52,9 +56,12 @@ int myxdpprogram(struct xdp_md *ctx) {
 
         case(IPPROTO_UDP): // If UDP is used as the transport protocol
         {
-          struct tcphdr *udp = (void*)ip + sizeof(*ip); 
+          struct udphdr *udp = (void*)ip + sizeof(*ip); 
           if ((void*)udp + sizeof(*udp) <= data_end) { // Check if UDP packet isn't malformed
           // Begin section of generated code
+          if(udp->dest == ntohs(68)){ // Check if UDP datagram is DHCP
+            return XDP_PASS; //Change this line to 'return XDP_DROP;' to disable DHCP
+          }
 //GENERATED_CODE_UDP
           // End section of generated code
           }
@@ -66,7 +73,7 @@ int myxdpprogram(struct xdp_md *ctx) {
           struct icmphdr *icmp = (void*)ip + sizeof(*ip); 
           if ((void*)icmp + sizeof(*icmp) <= data_end) { // Check if the ICMP packet isn't malformed
             // Begin section of generated code
-//GENERATED_CODE_ICMP
+            return XDP_PASS; //Change this line to 'return XDP_DROP;' to disable ICMP
             // End section of generated code
           }
           break;
