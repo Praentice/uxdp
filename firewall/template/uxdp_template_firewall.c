@@ -5,6 +5,10 @@
 #include <linux/icmp.h>
 #include <netinet/in.h>
 #include <bpf/bpf_helpers.h>
+#include <stdio.h>
+
+const int true = 1;
+const int false = 0;
 
 //Function to check if IP address is in network sub
 int is_ip_address_in_network(uint32_t ip, uint32_t netip, uint32_t netmask){

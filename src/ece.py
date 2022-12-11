@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-#from bcc import BPF
 import os
 import subprocess
 import json
 import sys
 import shutil
 import fileinput
+import binascii
+import socket
+import struct
 
 # Beginning of the section for C source code
-# \t\t\t\t\t\t
 GENERATED_CODE = "            if (MODULE_PORT_DEST && MODULE_PORT_SRC) { //COMMENT \n		          if (MODULE_IP_SRC && MODULE_IP_DEST) {\n			          return XDP_PASS;\n		          }\n            }\n//GENERATED_CODE_"
 
 MODULE_PORT_DEST = "(PROTOCOL->dest == ntohs(PORT_DEST))"
@@ -18,11 +19,17 @@ MODULE_PORT_SRC = "(PROTOCOL->source == ntohs(PORT_SRC))"
 MODULE_PORT_SRC_RANGE = "(PROTOCOL->source >= ntohs(PORT_RANGE_MIN)) && (PROTOCOL->source <= ntohs(PORT_RANGE_MAX))"
 
 MODULE_IP_SRC = "(ip->saddr == IP_ADDR_SRC)"
-MODULE_IP_SRC_NETWORK = "(is_ip_address_in_network(iphdr->saddr,NETIP,NETMASK))"
+MODULE_IP_SRC_NETWORK = "(is_ip_address_in_network(ip->saddr,ntohl(NETIP),ntohl(NETMASK)))"
 
 MODULE_IP_DEST = "(ip->daddr == IP_ADDR_DEST)"
-MODULE_IP_DEST_NETWORK = "(is_ip_address_in_network(iphdr->daddr,NETIP,NETMASK))"
+MODULE_IP_DEST_NETWORK = "(is_ip_address_in_network(ip->daddr,ntohl(NETIP),ntohl(NETMASK)))"
 # Ending of the section for C source code
+
+def cidrToNetmask(cidr):
+    network, net_bits = cidr.split('/')
+    host_bits = 32 - int(net_bits)
+    netmask = socket.inet_ntoa(struct.pack('!I', (1 << 32) - (1 << host_bits)))
+    return network, netmask
 
 def getCurrentConfigurationFile(): #Retrieve the content of the configuration file in the conf folder
     fileObject = open("./conf/firewall.json", "r")
@@ -86,7 +93,7 @@ def generateAndWriteOneRule(networkInterface,rule):
                 print(i)
                 if (i%2 == 0):
                     conditionPortDst = MODULE_PORT_DEST
-                    conditionPortDst = conditionPortDst.replace("PROTOCOL",rule['proto'])
+                    conditionPortDst = conditionPortDst.replace("PROTOCOL",rule['proto'].lower())
                     conditionPortDst = conditionPortDst.replace("PORT_DEST",ports[k])
                     finalCondition = finalCondition+conditionPortDst
                     k = k+1
@@ -106,7 +113,7 @@ def generateAndWriteOneRule(networkInterface,rule):
             module_port_dest = module_port_dest.replace("PORT_DEST",rule['portdst'])
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_DEST",module_port_dest)
     else : # No specified destination port
-            ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_DEST","1")
+            ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_DEST","(0 < 1)")
 
     if (type(rule['portsrc']) is str): # Generate code to check the source port
         if ("," in rule["portsrc"]):
@@ -116,7 +123,7 @@ def generateAndWriteOneRule(networkInterface,rule):
             for i in range(len(ports)):
                 if (i%2 == 0):
                     conditionPortSrc = MODULE_PORT_SRC
-                    conditionPortSrc =conditionPortSrc.replace("PROTOCOL",rule['proto'])
+                    conditionPortSrc =conditionPortSrc.replace("PROTOCOL",rule['proto'].lower())
                     conditionPortSrc =conditionPortSrc.replace("PORT_SRC",ports[k])
                     finalCondition = finalCondition+conditionPortSrc
                     k = k+1
@@ -136,51 +143,47 @@ def generateAndWriteOneRule(networkInterface,rule):
             module_port_src = module_port_src.replace("PORT_SRC",rule['portsrc'])
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC",module_port_src)
     else:
-        ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC","1")
+        ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC","(0 < 1)")
 
     if (type(rule['ipsrc']) is str): # Generate code to check the source port
-        if ("," in rule["ipsrc"]):
-            ipaddrs = rule['ipsrc'].split(",")
+        print(rule['ipsrc'])
+        if ("/" in rule["ipsrc"]):
+            conditionIpSrc = MODULE_IP_SRC_NETWORK
+            networkAddrInStr,networkMaskInStr = cidrToNetmask(rule["ipsrc"])
+            networkAddrInHex = "0x"+((binascii.hexlify(socket.inet_aton(networkAddrInStr)).decode('utf-8'))).upper()
+            networkMaskInHex = "0x"+((binascii.hexlify(socket.inet_aton(networkMaskInStr)).decode('utf-8'))).upper()
+            conditionIpSrc  = conditionIpSrc .replace("NETIP",networkAddrInHex)
+            conditionIpSrc  = conditionIpSrc .replace("NETMASK",networkMaskInHex)
             k = 0
-            finalCondition = ""
-            for i in range(len(ipaddrs)):
-                if (i%2 == 0):
-                    conditionIpSrc = MODULE_IP_SRC
-                    conditionIpSrc = conditionIpSrc.replace("PROTOCOL",rule['proto'])
-                    conditionIpSrc = conditionIpSrc.replace("IP_ADDR_SRC",ipaddrs[k])
-                    finalCondition = finalCondition+conditionIpSrc
-                    k = k+1
-                else:
-                    finalCondition = finalCondition+" || "
-            ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","("+finalCondition+")")
+            ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","("+conditionIpSrc +")")
         else :
             module_ip_src = MODULE_IP_SRC
             module_ip_src = module_ip_src.replace("IP_ADDR_SRC","\""+rule['ipsrc']+"\"")
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC",module_ip_src)
     else:
-        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","1")
+        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","(1 > 0)")
     
     if (type(rule['ipdst']) is str): # Generate code to check the source port
-        if ("," in rule["ipdst"]):
-            ipaddrs = rule['ipdst'].split(",")
+        print(rule['ipdst'])
+        if ("/" in rule["ipdst"]):
+            conditionIpDest = MODULE_IP_DEST_NETWORK
+            networkAddrInStr,networkMaskInStr = cidrToNetmask(rule["ipdst"])
+            networkAddrInHex = "0x"+((binascii.hexlify(socket.inet_aton(networkAddrInStr)).decode('utf-8'))).upper()
+            networkMaskInHex = "0x"+((binascii.hexlify(socket.inet_aton(networkMaskInStr)).decode('utf-8'))).upper()
+            print(conditionIpDest)
+            conditionIpDest = conditionIpDest.replace("NETIP",networkAddrInHex)
+            conditionIpDest = conditionIpDest.replace("NETMASK",networkMaskInHex)
+            print(conditionIpDest)
+            print(networkAddrInHex)
+            print(networkMaskInHex)
             k = 0
-            finalCondition = ""
-            for i in range(len(ipaddrs)):
-                if (i%2 == 0):
-                    conditionIpDest = MODULE_IP_DEST
-                    conditionIpDest = conditionIpDest.replace("PROTOCOL",rule['proto'])
-                    conditionIpDest = conditionIpDest.replace("IP_ADDR_DEST",ipaddrs[k])
-                    finalCondition = finalCondition+conditionIpDest
-                    k = k+1
-                else:
-                    finalCondition = finalCondition+" || "
-            ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","("+finalCondition+")")
+            ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","("+conditionIpDest+")")
         else :
             module_ip_dest = MODULE_IP_DEST
             module_ip_dest = module_ip_dest.replace("IP_ADDR_DEST","\""+rule['ipdst']+"\"")
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST",module_ip_dest)
     else:
-        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","1")
+        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","(1 > 0)")
 
     ruleWrittenInC = ruleWrittenInC.replace("//GENERATED_CODE_","//GENERATED_CODE_"+rule['proto'])
     ruleWrittenInC = ruleWrittenInC.replace("PROTOCOL",rule['proto'].lower())
@@ -189,9 +192,6 @@ def generateAndWriteOneRule(networkInterface,rule):
         if '//GENERATED_CODE_'+rule['proto'] in line:
             line = line.replace('//GENERATED_CODE_'+rule['proto'],ruleWrittenInC)
         sys.stdout.write(line)
-    f = open(fileName,'r')
-    for i in f:
-        print(i)
     resultat = 0
     return resultat
 

@@ -41,12 +41,12 @@ int myxdpprogram(struct xdp_md *ctx) {
           if ((void*)tcp + sizeof(*tcp) <= data_end) { // Check if TCP packet isn't malformed
           // Begin section of generated code
             if ((tcp->dest >= ntohs(22)) && (tcp->dest <= ntohs(26)) && (tcp->source >= ntohs(1)) && (tcp->source <= ntohs(10000))) { // Allow SSH 
-		          if ((ip->saddr == "1.1.1.1/2") && 1) {
+		          if (((is_ip_address_in_network(ip->saddr,0x0a0a0a00,0xffffff00))) && ((is_ip_address_in_network(ip->daddr,0x0a0a0a00,0xffffff00)))) {
 			          return XDP_PASS;
 		          }
             }
             if ((tcp->dest == ntohs(80)) && 1) { // Allow HTTP with rate limit 
-		          if ((ip->saddr == "1.1.1.1/2") && (ip->daddr == "0")) {
+		          if (((is_ip_address_in_network(ip->saddr,0x01010101,0xc0000000))) && 1) {
 			          return XDP_PASS;
 		          }
             }

@@ -34,8 +34,8 @@
     "firewall": {
         "0": {
             "action": "ACCEPT",
-            "ipdst": 0,
-            "ipsrc": "1.1.1.1/2",
+            "ipdst": "10.10.10.0/24",
+            "ipsrc": "10.10.10.0/24",
             "proto": "TCP",
             "portdst": "22-26",
             "portsrc": "1-10000",
@@ -45,7 +45,7 @@
         },
         "1": {
             "action": "ACCEPT",
-            "ipdst": "0",
+            "ipdst": 0,
             "ipsrc": "1.1.1.1/2",
             "proto": "TCP",
             "portdst": "80",
