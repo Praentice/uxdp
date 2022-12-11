@@ -3,35 +3,36 @@
         "0": {
             "action": "ACCEPT",
             "proto": "ICMP",
-            "portdst" : 0,
-            "portsrc" : 0,
-            "ipsrc" : 0,
-            "ipdst" : 0,
+            "portdst": 0,
+            "portsrc": 0,
+            "ipsrc": 0,
+            "ipdst": 0,
             "limit": 0,
             "comments": "Allow ICMP by default"
         },
         "1": {
             "action": "ACCEPT",
             "proto": "DHCP",
-            "portdst" : 0,
-            "portsrc" : 0,
-            "ipsrc" : 0,
-            "ipdst" : 0,
+            "portdst": 0,
+            "portsrc": 0,
+            "ipsrc": 0,
+            "ipdst": 0,
             "limit": 0,
             "comments": "Allow DHCP by default"
         },
         "2": {
             "action": "ACCEPT",
             "proto": "MULTICAST",
-            "portdst" : 0,
-            "portsrc" : 0,
-            "ipsrc" : 0,
-            "ipdst" : 0,
+            "portdst": 0,
+            "portsrc": 0,
+            "ipsrc": 0,
+            "ipdst": 0,
             "limit": 0,
             "comments": "Allow DHCP by default"
         }
     },
     "firewall": {
+<<<<<<< Updated upstream
         "0": {
             "action": "ACCEPT",
             "ipdst": "10.10.10.0/24",
@@ -56,14 +57,18 @@
         },
         "2": {
             "action": "ACCEPT",
+=======
+        "1": {
+            "action": "ACCEPT",
+>>>>>>> Stashed changes
             "ipdst": 0,
-            "ipsrc": "any",
+            "ipsrc": 0,
             "proto": "TCP",
             "portdst": 0,
             "portsrc": "80,443",
             "limit": 0,
             "comments": "Allow web access",
-            "interface": "eth"
+            "interface": "eth0"
         }
     },
     "firewall_status": {

@@ -107,7 +107,7 @@ def getFirewallstatusNumbered():
                 data.append([
                 rule, r["interface"], r["action"],
                 r["ipdst"], r["ipsrc"], r["proto"],
-                r["portdst"], r["portsrc"], r["limit"],
+                r["portsrc"], r["portdst"], r["limit"],
                 r["comments"]])
             print(tabulate(data, headers=head, tablefmt="grid"))
             return True
@@ -123,11 +123,17 @@ def addRule(fwaction):
         if "ipsrc" in arg:
             ip = arg.split("=")[1]
             if ip == "any" or validateIp(ip) != False:
-                ipsrc = ip
+                if ip == "any":
+                    ipsrc = 0
+                else:
+                    ipsrc = ip
         if "ipdst" in arg:
             ip = arg.split("=")[1]
             if ip == "any" or validateIp(ip) != False:
-                ipdst = ip
+                if ip == "any":
+                    ipsrc = 0
+                else:
+                    ipdst = ip
         if "portsrc" in arg:
             portsrc = arg.split("=")[1]
         if "portdst" in arg:
