@@ -14,46 +14,59 @@ sudo apt install bpftool
 sudo apt install tcpdump
 export PATH=$PATH:/usr/sbin #Fix bug when bpftool is not found
 ```
-
+Then, install the required modules for the Python script : 
 ```
 pip install -r requirements.txt
 ```
 ### Running the tool
-```commandline
-Nothing yet.
+You need to use sudo to run this tool.
+```bash
+sudo python3 /path/to/repo/uxdp.py
 ```
 ## Documentation
 ### Syntax
-./main.py (allow ; deny ; limit) on (1-65535 ; 80,443 ; 80-100 ; any) from (any ; 192.168.1.1 ; 192.168.1.0/24 ; 192.168.1.0-10 ; 192.168.1.10,192.168.1.11)
+
 
 | Keyword                   | Explanation                                                                              |
 |---------------------------|------------------------------------------------------------------------------------------|
-| Allow                     | Allow access to a given port                                                             |
-| Limit                     | Limit access to a given port                                                             |
-| Deny                      | Deny access to a given port                                                              |
-| 1-65535                   | Any network port between 1 and 65535 included                                            |
-| 80, 443                   | Apply the rule on the network port 80 (HTTP) and 443 (HTTPS)                             |
-| 80-100                    | Apply the rule on the network port 80 to the network port 100                            |
-| 192.168.1.1               | Apply the rule to the 192.168.1.1 ip address only                                        |
-| 192.168.1.0/24            | Apply the rule to the network subnet 192.168.1.0/24                                      |
-| 192.168.1.0-10            | Apply the rule to all the ip address from 192.168.1.1 to 192.168.1.10 included           |
-| 192.168.1.10,192.168.1.11 | Apply the rule to the 192.168.1.10 and 192.168.1.11 ip address                           |
-| any                       | Apply the rule to all of the IP address or all of the network port based on its position |
+| enable                    | enable the firewall                                                           |
+| disable                      | disable the firewall                                                             |
+| allow ARGS                    | Allow access to a given port                                                             |
+| deny ARGS                     | Deny access to a given port                                                              |
+| limit ARGS                     | Limit access to a given port                                                             |
+|delete RULE/NUM |delete RULE|
+|reload|reload firewall|
+|reset|reset firewall|
+|status|show firewall status|
+|status numbered|show firewall status as a numbered list of RULES|
+|version| display informations|
 
-#### Examples commands
+If you run the uxdp.py script with the action "allow", "deny" or "limit", you need to issue the following arguments : 
+
+
+
+| Required Flag        | Description                          |
+|-------------|--------------------------------------|
+| -proto  | Choose the transport protocol to filter in our rule  |
+| -interface | Choose the network interface on which the rule will be applied|
+| -ipsrc | Choose the source ip address to filter in our rule|
+
+| Optional Flag        | Description                          |
+|-------------|--------------------------------------|
+| -ipdst | Choose the destination ip address  to filter in our rule|firewall"  |     
+|-comments|Add a comment to the rule|
+|-portdst|Choose the destination port to filter in our rule|       
+|-portsrc|Choose the source port to filter in our rule|   
+|-limit|Put a rate limit on the packet which match the rule|
+
+Here's some example of command you can run with this script.
 
 | Command                                 | Explanation                                                                         |
 |-----------------------------------------|-------------------------------------------------------------------------------------|
-| ./main.py limit 80 from any             | Limit access to the network port number 80 (HTTP) from any IP address               |
-| ./main.py allow 22 from 192.168.1.1     | Allow access to the network port number 22 (SSH) from 192.168.1.1                   |
-| ./main.py allow 443 from 192.168.1.0/24 | Allow access to the network port number 443 (HTTPS) from the 192.168.1.0/24 network |
-|                                         |                                                                                     |
+| sudo python3 /uxdp.py allow -proto=TCP -interface=eth0 -ipsrc=0.0.0.0/0 -comments=Allow-HTTP-Access -portdst=80 | Allow packets to the HTTP (80) port from anywhere               |
+| sudo python3 /uxdp.py allow -proto=TCP -interface=eth0 -ipsrc=192.168.1.0/24 -comments=Allow-SSH-Access -portdst=22 | Allow packets to the SSH (22) port from the subnet 192.168.1.0/24.               |
+| sudo python3 /uxdp.py allow -proto=TCP -interface=eth0 -ipdst=192.168.1.1/32 -ipsrc=192.168.1.0/24 -comments=Allow-FTP-Access -portdst=20-21 -portsrc=40000-50000 | Allow packets to the FTP (20 and 21) port from the subnet 192.168.1.0/24 only on the IP address 192.168.1.1 and from a source port which is included in the range 40000 to 50000.               |
 
-### Optional flags
-| Flag        | Description                          |
-|-------------|--------------------------------------|
-| -q/--quiet  | Disable the ability of the program to print message on the terminal.                      |
-| -o/--output | Output name for the source code which will be created then compiled. Default value is "./firewall"  |                                     
 ## Credits
 
 This tool is provided for free under GNU License.
