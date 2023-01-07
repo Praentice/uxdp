@@ -13,7 +13,7 @@ sudo apt install python3 python3-pip
 ```
 Then, install the required modules for the Python script : 
 ```
-pip install -r requirements.txt
+sudo pip install -r requirements.txt
 ```
 ### Running the tool
 You need to use sudo to run this tool.
