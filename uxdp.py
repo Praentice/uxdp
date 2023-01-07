@@ -17,7 +17,6 @@ def getHelp():
     disable               disable the firewall
     allow ARGS            add an "allow" rule
     deny ARGS             add a "deny" rule
-    limit ARGS            add a limit rule
     delete RULE|NUM       delete a rule by replacing RULE by the rule ID.
     reload                reload the firewall (Unload and load the firewall)
     reset                 reset the firewall configuratiion
