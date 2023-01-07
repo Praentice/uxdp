@@ -1,13 +1,13 @@
 # UXDP (Uncomplicated XDP)
 This CLI tool allows you to easily configure the XDP firewall on your server.
 ## Install the dependencies
-First, do the following commands on a Debian virtual machine: 
+First, do the following commands on a Debian or Ubuntu virtual machine: 
 ```commandline
 apt install sudo #Launch this command as root user
 sudo apt update && sudo apt upgrade
 sudo apt install git
 git clone --recurse-submodules https://github.com/xdp-project/xdp-tutorial
-sudo apt install clang llvm libelf-dev libpcap-dev gcc-multilib build-essential
+sudo apt install clang llvm libelf-dev libbpf-dev libpcap-dev gcc-multilib build-essential
 sudo apt install linux-headers-$(uname -r)
 sudo apt install python3 python3-pip
 ```
@@ -30,7 +30,6 @@ sudo python3 /path/to/repo/uxdp.py
 | disable                      | disable the firewall                                                             |
 | allow ARGS                    | Allow access to a given port                                                             |
 | deny ARGS                     | Deny access to a given port                                                              |
-| limit ARGS                     | Limit access to a given port                                                             |
 |delete RULE/NUM |delete RULE|
 |reload|reload firewall|
 |reset|reset firewall|
@@ -54,7 +53,6 @@ If you run the uxdp.py script with the action "allow", "deny" or "limit", you ne
 |-comments|Add a comment to the rule|
 |-portdst|Choose the destination port to filter in our rule|       
 |-portsrc|Choose the source port to filter in our rule|   
-|-limit|Put a rate limit on the packet which match the rule|
 
 Here's some example of command you can run with this script.
 
