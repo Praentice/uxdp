@@ -92,7 +92,6 @@ def generateAndWriteOneRule(networkInterface,rule):
             k = 0
             finalCondition = ""
             for i in range(len(ports)+1):
-                print(i)
                 if (i%2 == 0):
                     conditionPortDst = MODULE_PORT_DEST
                     conditionPortDst = conditionPortDst.replace("PROTOCOL",rule['proto'].lower())
