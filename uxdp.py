@@ -13,16 +13,16 @@ def getHelp():
     Usage: uxdp COMMAND
 
     Commands:
-    enable                enables the firewall
-    disable               disables the firewall
-    allow ARGS            add allow rule
-    deny ARGS             add deny rule
-    limit ARGS            add limit rule
-    delete RULE|NUM       delete RULE
-    reload                reload firewall
-    reset                 reset firewall
-    status                show firewall status
-    status numbered       show firewall status as numbered list of RULES
+    enable                enable the firewall
+    disable               disable the firewall
+    allow ARGS            add an "allow" rule
+    deny ARGS             add a "deny" rule
+    limit ARGS            add a limit rule
+    delete RULE|NUM       delete a rule by replacing RULE by the rule ID.
+    reload                reload the firewall (Unload and load the firewall)
+    reset                 reset the firewall configuratiion
+    status                show the firewall status
+    status numbered       show all of the firewall rules
     version               display version information
     """
     print(help)
@@ -33,7 +33,7 @@ def getFirewallconfig():
     Read the firewall.json config rile
     :return: Json firewall
     """
-    firewall = open('conf/firewall.json')
+    firewall = open("./conf/firewall.json")
     return json.load(firewall)
 
 def getFirewallstatus():

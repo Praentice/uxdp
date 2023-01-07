@@ -32,42 +32,37 @@
         }
     },
     "firewall": {
-<<<<<<< Updated upstream
         "0": {
             "action": "ACCEPT",
-            "ipdst": "10.10.10.0/24",
-            "ipsrc": "10.10.10.0/24",
+            "ipdst": 0,
+            "ipsrc": "0.0.0.0/0",
             "proto": "TCP",
-            "portdst": "22-26",
-            "portsrc": "1-10000",
-            "limit": "10/30",
-            "comments": "Allow SSH",
+            "portdst": "80",
+            "portsrc": 0,
+            "limit": 0,
+            "comments": "Allow-HTTP-Access",
             "interface": "eth0"
         },
         "1": {
             "action": "ACCEPT",
             "ipdst": 0,
-            "ipsrc": "1.1.1.1/2",
+            "ipsrc": "192.168.1.0/24",
             "proto": "TCP",
-            "portdst": "80",
+            "portdst": "22",
             "portsrc": 0,
-            "limit": "10/30",
-            "comments": "Allow HTTP with rate limit",
+            "limit": 0,
+            "comments": "Allow-SSH-Access",
             "interface": "eth0"
         },
         "2": {
             "action": "ACCEPT",
-=======
-        "1": {
-            "action": "ACCEPT",
->>>>>>> Stashed changes
-            "ipdst": 0,
-            "ipsrc": 0,
+            "ipdst": "192.168.1.1/32",
+            "ipsrc": "192.168.1.0/24",
             "proto": "TCP",
-            "portdst": 0,
-            "portsrc": "80,443",
+            "portdst": "20-21",
+            "portsrc": "40000-50000",
             "limit": 0,
-            "comments": "Allow web access",
+            "comments": "Allow-FTP-Access",
             "interface": "eth0"
         }
     },
