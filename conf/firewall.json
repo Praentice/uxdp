@@ -32,41 +32,8 @@
         }
     },
     "firewall": {
-        "0": {
-            "action": "ACCEPT",
-            "ipdst": 0,
-            "ipsrc": "0.0.0.0/0",
-            "proto": "TCP",
-            "portdst": "80",
-            "portsrc": 0,
-            "limit": 0,
-            "comments": "Allow-HTTP-Access",
-            "interface": "eth0"
-        },
-        "1": {
-            "action": "ACCEPT",
-            "ipdst": 0,
-            "ipsrc": "192.168.1.0/24",
-            "proto": "TCP",
-            "portdst": "22",
-            "portsrc": 0,
-            "limit": 0,
-            "comments": "Allow-SSH-Access",
-            "interface": "eth0"
-        },
-        "2": {
-            "action": "ACCEPT",
-            "ipdst": "192.168.1.1/32",
-            "ipsrc": "192.168.1.0/24",
-            "proto": "TCP",
-            "portdst": "20-21",
-            "portsrc": "40000-50000",
-            "limit": 0,
-            "comments": "Allow-FTP-Access",
-            "interface": "eth0"
-        }
     },
     "firewall_status": {
-        "status": "active"
+        "status": "inactive"
     }
 }
