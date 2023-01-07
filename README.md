@@ -8,11 +8,8 @@ sudo apt update && sudo apt upgrade
 sudo apt install git
 git clone --recurse-submodules https://github.com/xdp-project/xdp-tutorial
 sudo apt install clang llvm libelf-dev libpcap-dev gcc-multilib build-essential
-sudo apt install linux-perf
 sudo apt install linux-headers-$(uname -r)
-sudo apt install bpftool
-sudo apt install tcpdump
-export PATH=$PATH:/usr/sbin #Fix bug when bpftool is not found
+sudo apt install python3 python3-pip
 ```
 Then, install the required modules for the Python script : 
 ```
