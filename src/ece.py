@@ -114,7 +114,7 @@ def generateAndWriteOneRule(networkInterface,rule):
             module_port_dest = module_port_dest.replace("PORT_DEST",rule['portdst'])
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_DEST",module_port_dest)
     else : # No specified destination port
-            ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_DEST","(0 < 1)")
+            ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_DEST","(1)")
 
     if (type(rule['portsrc']) is str): # Generate code to check the source port
         if ("," in rule["portsrc"]):
@@ -144,7 +144,7 @@ def generateAndWriteOneRule(networkInterface,rule):
             module_port_src = module_port_src.replace("PORT_SRC",rule['portsrc'])
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC",module_port_src)
     else:
-        ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC","(0 < 1)")
+        ruleWrittenInC = ruleWrittenInC.replace("MODULE_PORT_SRC","(1)")
 
     if (type(rule['ipsrc']) is str): # Generate code to check the source port
         if ("/" in rule["ipsrc"]):
@@ -161,7 +161,7 @@ def generateAndWriteOneRule(networkInterface,rule):
             module_ip_src = module_ip_src.replace("IP_ADDR_SRC","\""+rule['ipsrc']+"\"")
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC",module_ip_src)
     else:
-        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","(1 > 0)")
+        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_SRC","(1)")
     
     if (type(rule['ipdst']) is str): # Generate code to check the source port
         if ("/" in rule["ipdst"]):
@@ -178,7 +178,7 @@ def generateAndWriteOneRule(networkInterface,rule):
             module_ip_dest = module_ip_dest.replace("IP_ADDR_DEST","\""+rule['ipdst']+"\"")
             ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST",module_ip_dest)
     else:
-        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","(1 > 0)")
+        ruleWrittenInC = ruleWrittenInC.replace("MODULE_IP_DEST","(1)")
 
     ruleWrittenInC = ruleWrittenInC.replace("//GENERATED_CODE_","//GENERATED_CODE_"+rule['proto'])
     ruleWrittenInC = ruleWrittenInC.replace("PROTOCOL",rule['proto'].lower())
