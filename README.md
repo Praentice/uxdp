@@ -3,13 +3,8 @@ This CLI tool allows you to easily configure the XDP firewall on your server.
 ## Install the dependencies
 First, do the following commands on a Debian or Ubuntu virtual machine: 
 ```commandline
-apt install sudo #Launch this command as root user
 sudo apt update && sudo apt upgrade
-sudo apt install git
-git clone --recurse-submodules https://github.com/xdp-project/xdp-tutorial
-sudo apt install clang llvm libelf-dev libbpf-dev libpcap-dev gcc-multilib build-essential
-sudo apt install linux-headers-$(uname -r)
-sudo apt install python3 python3-pip
+sudo apt install clang llvm libelf-dev libbpf-dev libpcap-dev gcc-multilib build-essential linux-headers-$(uname -r) python3 python3-pip
 ```
 Then, install the required modules for the Python script : 
 ```
