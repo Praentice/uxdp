@@ -35,7 +35,7 @@ int myxdpprogram(struct xdp_md *ctx) {
 
   // Does the size of the packet really fits as an Ethernet Frame
   if ((void*)eth + sizeof(*eth) <= data_end) { // Check if Ethernet Frame isn't malformed
-    if ((eth->h_proto == 0x0806) || (eth->h_proto == 0x0026)) return XDP_PASS; // Let ARP and Spanning Tree go through
+    if ((eth->h_proto == ntohs(0x0806)) || (eth->h_proto == ntohs(0x0026))) return XDP_PASS; // Let ARP and Spanning Tree go through
     // Dissecting the IPv4 part
     struct iphdr *ip = data + sizeof(*eth);
     if ((void*)ip + sizeof(*ip) <= data_end) { // Check if IPv4 packet isn't malformed
