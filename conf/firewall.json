@@ -32,6 +32,17 @@
         }
     },
     "firewall": {
+        "0": {
+            "action": "ACCEPT",
+            "ipdst": 0,
+            "ipsrc": "0.0.0.0/0",
+            "proto": "TCP",
+            "portdst": "80",
+            "portsrc": 0,
+            "limit": 0,
+            "comments": "Allow-HTTP-Access",
+            "interface": "eth0"
+        }
     },
     "firewall_status": {
         "status": "inactive"

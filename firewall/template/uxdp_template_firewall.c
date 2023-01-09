@@ -35,7 +35,7 @@ int myxdpprogram(struct xdp_md *ctx) {
 
   // Does the size of the packet really fits as an Ethernet Frame
   if ((void*)eth + sizeof(*eth) <= data_end) { // Check if Ethernet Frame isn't malformed
-    
+    if ((eth->h_proto == 0x0806) || (eth->h_proto == 0x0026)) return XDP_PASS; // Let ARP and Spanning Tree go through
     // Dissecting the IPv4 part
     struct iphdr *ip = data + sizeof(*eth);
     if ((void*)ip + sizeof(*ip) <= data_end) { // Check if IPv4 packet isn't malformed
@@ -59,7 +59,7 @@ int myxdpprogram(struct xdp_md *ctx) {
           struct udphdr *udp = (void*)ip + sizeof(*ip); 
           if ((void*)udp + sizeof(*udp) <= data_end) { // Check if UDP packet isn't malformed
           // Begin section of generated code
-          if(udp->dest == ntohs(68)){ // Check if UDP datagram is DHCP
+          if (udp->dest == ntohs(68) || (udp->dest == ntohs(53))){ // Check if UDP datagram is DHCP
             return XDP_PASS; //Change this line to 'return XDP_DROP;' to disable DHCP
           }
 //GENERATED_CODE_UDP
@@ -86,16 +86,5 @@ int myxdpprogram(struct xdp_md *ctx) {
   return XDP_DROP;
 
 }
-/*
-// https://stackoverflow.com/questions/31040208/standard-safe-way-to-check-if-ip-address-is-in-range-subnet
-uint32_t ip = ...; // value to check
-uint32_t netip = ...; // network ip to compare with
-uint32_t netmask = ...; // network ip subnet mask
-if ((netip & netmask) == (ip & netmask))
-    // is on same subnet...
-else
-    // not on same subnet...
-*/
-
 
 char _license[] SEC("license") = "GPL";
