@@ -68,8 +68,7 @@ def applyRules(rulesPerNetworkInterfaces):
         if errorCode == 1:
             print("Error during the compilation of the firwall for this network interface : {}".format(networkInterface))
         else :
-            print("ok")
-            #executeCompiledProgram(networkInterface) # We apply the firewall program on the network interface
+            executeCompiledProgram(networkInterface) # We apply the firewall program on the network interface
 
 
 def generateSourceCodePerNetworkInterface(networkInterface,rules): #Generate the firewall source code based on the configuration retrieved from the file ./conf/firewall.json
